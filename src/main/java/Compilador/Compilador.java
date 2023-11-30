@@ -328,6 +328,7 @@ public class Compilador {
         return null;
     }
 
+
     public static void colocaTipoTabela(String tipo) {
         for (SimboloCSD csd : tabelaSimbolos) {
             if (csd.tipo.equals("variavel")) {
@@ -356,13 +357,15 @@ public class Compilador {
             aux = tabelaSimbolos.pop();
             if (aux.escopo.equals("L")) break;
 
-            contador += 1;
+            if(aux.tipo.equals("variavel-boleano") || aux.tipo.equals("variavel-inteiro"))
+                contador += 1;
             if (tabelaSimbolos.getFirst().escopo.equals("L")) {
                 endereco = Integer.valueOf(csd.memoria);
             }
         }
-
-        codigo.gera("", "DALLOC", String.valueOf(endereco), String.valueOf(contador));
+        if(contador >0)
+            codigo.gera("", "DALLOC", String.valueOf(endereco), String.valueOf(contador));
+        aux.escopo = "";
         tabelaSimbolos.push(aux);
     }
 
@@ -406,13 +409,18 @@ public class Compilador {
                     codigo.gera("", "OR", "", "");
                 }
                 case "snao" -> {
-                    codigo.gera("", "INV", "", "");
+                    codigo.gera("", "NEG", "", "");
                 }
                 case "sverdadeiro" -> {
                     codigo.gera("", "LDC", "1", "");
                 }
                 case "sfalso" -> {
                     codigo.gera("", "LDC", "0", "");
+                }
+                case "sunario" ->{
+                    if(t.lexema.equals("-u")){
+                        codigo.gera("", "INV", "", "");
+                    }
                 }
                 default -> {
                     if (t.simbolo.equals("sidentificador")) {
@@ -421,7 +429,7 @@ public class Compilador {
                             if (csd.tipo.equals("variavel-inteiro") || csd.tipo.equals("variavel-booleano")) {
                                 codigo.gera("", "LDV", csd.memoria, "");
                             } else {
-                                codigo.gera("", "CALL", "R" + csd.memoria, "");
+                                codigo.gera("", "CALL", csd.memoria, "");
                                 codigo.gera("", "LDV", "0", "");
                             }
                         }
@@ -586,7 +594,10 @@ public class Compilador {
             if (!analisaTipoSem(container.expressao, csd.tipo)) {
                 System.out.println("Tipo incompativeis");
             }
-            codigo.gera("", "STR", csd.memoria, "");
+            if(csd.tipo.equals("variavel-booleano") || csd.tipo.equals("variavel-inteiro"))
+                codigo.gera("", "STR", csd.memoria, "");
+            else if(csd.tipo.equals("funcao-boleana") || csd.tipo.equals("funcao-inteira"))
+                codigo.gera("", "STR", "0", "");
             container.expressao = new ArrayList<>();
         } else {
             SimboloCSD csd = consultaTabela(b.lexema);
@@ -613,7 +624,6 @@ public class Compilador {
     }
 
     public static Container analisaChamadaProcedimento(Container container, LineNumberReader lr) throws IOException {
-
         return container;
     }
 
@@ -726,26 +736,32 @@ public class Compilador {
 
     public static Container analisaSe(Container container, LineNumberReader lr) throws IOException {
         container.setToken(analisadorLexical(container.read, lr));
-
+        int auxrot1=0,auxrot2=0;
         container = analisaExpressao(container, lr);
         container.expressao = infixToPostfix(container.expressao);
 
         geraCodigoExpressao(container.expressao);
         if (container.token.simbolo.equals("sentao")) {
             codigo.gera("", "JMPF", "L" + label, "");
+            auxrot1 = label;
+            label+=1;
+
             container.setToken(analisadorLexical(container.read, lr));
             container = analisaComandoSimples(container, lr);
-            codigo.gera("", "JMP", "L" + (label + 1), "");
             if (container.token.simbolo.equals("ssenao")) {
-                codigo.gera("L" + label, "NULL", "", "");
-                label += 1;
+                codigo.gera("", "JMP", "L" + label, "");
+                auxrot2 = label;
+
+                codigo.gera("L"+auxrot1,"NULL", "","");
+
                 container.setToken(analisadorLexical(container.read, lr));
                 container = analisaComandoSimples(container, lr);
+                codigo.gera("L"+ auxrot2,"NULL","","");
+            }else{
+                codigo.gera("L"+auxrot1,"NULL", "","");
             }
         } else System.out.println("erro not sentao");
 
-        codigo.gera("L" + label, "NULL", "", "");
-        label += 1;
         return container;
     }
 
@@ -861,6 +877,7 @@ public class Compilador {
         Container container = analisadorLexical(r, lr);
         if (container.token.simbolo.equals("sidentificador")) {
             insereTabela(container.token.lexema, "", "L", "L" + label);
+            label+=1;
             container.setToken(analisadorLexical(container.read, lr));
             if (container.token.simbolo.equals("sdoispontos")) {
                 container.setToken(analisadorLexical(container.read, lr));
@@ -874,6 +891,7 @@ public class Compilador {
                         aux.tipo = "funcao-boleana";
                         tabelaSimbolos.push(aux);
                     }
+                    codigo.gera(tabelaSimbolos.peek().memoria,"NULL","","");
                     container.setToken(analisadorLexical(container.read, lr));
                     if (container.token.simbolo.equals("sponto_virgula")) {
                         container = analisaBloco(container.read, lr);
@@ -888,6 +906,7 @@ public class Compilador {
             System.out.println("Error not sidentificador");
         }
         desempilha();
+        codigo.gera("","RETURNF","","");
         return container;
     }
 
