@@ -16,6 +16,8 @@ public class Compilador {
     static Deque<SimboloCSD> tabelaSimbolos = new ArrayDeque<>();
     static int label;
     static int memoryPointer = 0;
+
+//    public static List<Erro> listaErro;
     public static GeraCodigo codigo;
     /* Testing functions */
 
