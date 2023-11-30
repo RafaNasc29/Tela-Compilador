@@ -1,5 +1,6 @@
 package com.example.telacompilador;
 
+import Compilador.Compilador;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.stage.FileChooser;
@@ -12,6 +13,9 @@ import java.io.*;
 public class Controller {
     @FXML
     private CodeArea codeArea;
+
+    private File selectedFile;
+
     @FXML
     public void saveOrNewMethod() throws IOException {
         Stage stage = new Stage();
@@ -20,14 +24,14 @@ public class Controller {
 
         chooser.setTitle("Save File");
 
-        File selectedFile = chooser.showSaveDialog(stage);
+        selectedFile = chooser.showSaveDialog(stage);
         FileWriter FW = new FileWriter(selectedFile.getAbsolutePath());
         FW.write(codeArea.getText());
         FW.close();
     }
 
-    public void runMethod() {
-
+    public void runMethod() throws IOException {
+        Compilador.run(selectedFile);
     }
 
     public void openMethod() throws IOException {
@@ -37,7 +41,7 @@ public class Controller {
 
         chooser.setTitle("Open File");
 
-        File selectedFile = chooser.showOpenDialog(stage);
+        selectedFile = chooser.showOpenDialog(stage);
         FileReader FR = new FileReader(selectedFile.getAbsolutePath());
         BufferedReader BR = new BufferedReader(FR);
 
