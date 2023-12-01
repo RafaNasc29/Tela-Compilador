@@ -13,12 +13,14 @@ import java.util.List;
 
 public class Compilador {
     static List<Token> lista = new ArrayList<>();
+    static List<ErrorMessage> errorMessageList = new ArrayList<>();
     static Deque<SimboloCSD> tabelaSimbolos = new ArrayDeque<>();
     static int label;
     static int memoryPointer = 0;
 
 //    public static List<Erro> listaErro;
     public static GeraCodigo codigo;
+
     /* Testing functions */
 
     private static boolean isDigit(int r) {
@@ -43,6 +45,12 @@ public class Compilador {
 
     private static boolean isPunctuation(int r) {
         return (r == 40) || (r == 41) || (r == 44) || (r == 46) || (r == 59);
+    }
+
+    /* Error handling functions*/
+
+    private static void errorHandler(int line, String message) {
+        errorMessageList.add(new ErrorMessage(line, message));
     }
 
     /* Lexical analyser functions */
@@ -619,7 +627,7 @@ public class Compilador {
         container.setToken(analisadorLexical(container.read, lr));
         container = analisaExpressao(container, lr);
 
-        container.expressao = infixToPostfix(container.expressao);
+        container.expressao = infixToPostfix(container.expressao, lr);
         geraCodigoExpressao(container.expressao);
 
         return container;
@@ -714,7 +722,7 @@ public class Compilador {
         container.setToken(analisadorLexical(container.read, lr));
 
         container = analisaExpressao(container, lr);
-        container.expressao = infixToPostfix(container.expressao);
+        container.expressao = infixToPostfix(container.expressao, lr);
 
         geraCodigoExpressao(container.expressao);
 
@@ -740,7 +748,7 @@ public class Compilador {
         container.setToken(analisadorLexical(container.read, lr));
         int auxrot1=0,auxrot2=0;
         container = analisaExpressao(container, lr);
-        container.expressao = infixToPostfix(container.expressao);
+        container.expressao = infixToPostfix(container.expressao, lr);
 
         geraCodigoExpressao(container.expressao);
         if (container.token.simbolo.equals("sentao")) {
@@ -820,7 +828,7 @@ public class Compilador {
 
         if (container.token.simbolo.equals("sidentificador")) {
             container.expressao.add(container.token);
-            container = analisaChamadaFuncao(container, lr);
+            analisaChamadaFuncao(container, lr);
         } else if (container.token.simbolo.equals("snumero")) {
             container.expressao.add(container.token);
             container.setToken(analisadorLexical(container.read, lr));
@@ -865,6 +873,7 @@ public class Compilador {
             if (container.token.simbolo.equals("sponto_virgula")) {
                 container.setToken(analisadorLexical(container.read, lr));
             } else {
+                errorHandler(lr.getLineNumber(), "Error not sponto_virgula");
                 System.out.println("Error not sponto_virgula");
             }
         }
@@ -899,12 +908,15 @@ public class Compilador {
                         container = analisaBloco(container.read, lr);
                     }
                 } else {
+                    errorHandler(lr.getLineNumber(), "Error not stipo");
                     System.out.println("Error not stipo");
                 }
             } else {
+                errorHandler(lr.getLineNumber(), "Error not sdoispontos");
                 System.out.println("Error not sdoispontos");
             }
         } else {
+            errorHandler(lr.getLineNumber(), "Error not sidentificador");
             System.out.println("Error not sidentificador");
         }
         desempilha();
@@ -924,12 +936,15 @@ public class Compilador {
                 if (container.token.simbolo.equals("sponto_virgula")) {
                     container = analisaBloco(container.read, lr);
                 } else {
+                    errorHandler(lr.getLineNumber(), "Error not spontovirgula");
                     System.out.println("Error not spontovirgula");
                 }
             } else {
+                errorHandler(lr.getLineNumber(), "Procedimento ja declarado");
                 System.out.println("Procedimento ja declarado");
             }
         } else {
+            errorHandler(lr.getLineNumber(), "Error not sidentificador");
             System.out.println("Error not sidentificador");
         }
         desempilha();
@@ -964,18 +979,23 @@ public class Compilador {
                             codigo.gera("", "HLT", "", "");
                             System.out.println("SUCCESS");
                         } else {
+                            errorHandler(curLine, "Error not EOF or comment");
                             System.out.println("Error not EOF or comment, line: " + curLine);
                         }
                     } else {
+                        errorHandler(lr.getLineNumber(), "Error not sponto");
                         System.out.println("Error not sponto");
                     }
                 } else {
+                    errorHandler(lr.getLineNumber(), "Error not spontovirgula");
                     System.out.println("Error not spontovirgula");
                 }
             } else {
+                errorHandler(lr.getLineNumber(), "Error not sidentificador");
                 System.out.println("Error not sidentificador");
             }
         } else {
+            errorHandler(lr.getLineNumber(), "Error not sprograma");
             System.out.println("Error not sprograma");
         }
         return container;
@@ -983,6 +1003,7 @@ public class Compilador {
 
     public static void run(File file) throws IOException {
         lista = new ArrayList<>();
+        errorMessageList = new ArrayList<>();
         tabelaSimbolos = new ArrayDeque<>();
         label = 0;
         memoryPointer = 0;
@@ -1002,39 +1023,13 @@ public class Compilador {
         maquinaVirtual.execute();*/
     }
 
-    static boolean testOperator(String element) {
-        return element.equals("+") || element.equals("*") || element.equals("div") || element.equals("-") ||
-                element.equals("e") || element.equals("ou") || element.equals("nao") || element.equals(">") ||
-                element.equals(">=") || element.equals("<") || element.equals("<=") || element.equals("!=") ||
-                element.equals("=");
-    }
-
-    static boolean testArithmetic(String element) {
-        return element.equals("+") || element.equals("*") || element.equals("div") || element.equals("-");
-    }
-
-    static boolean testRelational(String element) {
-        return element.equals(">") || element.equals(">=") || element.equals("<") || element.equals("<=") ||
-                element.equals("!=") || element.equals("=");
-    }
-
-    static boolean testLogical(String element) {
-        return element.equals("e") || element.equals("ou");
-    }
-
-    static boolean testNeg(String element) {
-        return element.equals("nao");
-    }
-
-
-    static boolean testExpression(List<Token> expression) {
-        System.out.println("\nExpressao: ");
+    static void testExpression(List<Token> expression, LineNumberReader lr) {
         SimboloCSD csd;
+        boolean flag = false;
         String temp, aux1, aux2;
         Deque<String> stack = new ArrayDeque<>();
         Deque<String> auxStack = new ArrayDeque<>();
         for (int i = expression.size() - 1; i >= 0; i--) {
-            System.out.println(expression.get(i).lexema + " " + expression.get(i).simbolo);
             switch (expression.get(i).simbolo) {
                 case "sidentificador" -> {
                     csd = consultaTabela(expression.get(i).lexema);
@@ -1055,54 +1050,43 @@ public class Compilador {
                 default -> stack.push(expression.get(i).lexema);
             }
         }
-        System.out.println("\nstack:");
         while (!stack.isEmpty()) {
             temp = stack.pop();
-            System.out.println(temp);
             switch (temp) {
                 case "arithmeticOp", "relationalOp" -> {
                     aux1 = auxStack.pop();
                     aux2 = auxStack.pop();
                     if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
                         auxStack.push("inteiro");
-                    } else {
-                        System.out.println("Tipo invalido, esperado inteiro");
-                    }
+                    } else flag = true;
                 }
                 case "logicalOp" -> {
                     aux1 = auxStack.pop();
                     aux2 = auxStack.pop();
                     if (aux1.equals("booleano") && aux2.equals("booleano")) {
                         auxStack.push("booleano");
-                    } else {
-                        System.out.println("Tipo invalido, esperado booleano");
-                    }
+                    } else flag = true;
                 }
                 case "unaryOp" -> {
                     aux1 = auxStack.pop();
                     if (aux1.equals("inteiro")) {
                         auxStack.push("inteiro");
-                    } else {
-                        System.out.println("Tipo invalido, esperado inteiro");
-                    }
+                    } else flag = true;
                 }
                 case "negOp" -> {
                     aux1 = auxStack.pop();
                     if (aux1.equals("booleano")) {
                         auxStack.push("booleano");
-                    } else {
-                        System.out.println("Tipo invalido, esperado booleano");
-                    }
+                    } else flag = true;
                 }
                 default -> auxStack.push(temp);
             }
+            if (flag) break;
         }
-        System.out.println("\nauxStack:");
-        while (!auxStack.isEmpty()) {
-            System.out.println(auxStack.pop());
+        if (flag) {
+            errorHandler(lr.getLineNumber(), "Expressão com tipos incompatíveis.");
+            System.out.println("Linha: " + lr.getLineNumber() + " Expressão com tipos incompatíveis.");
         }
-        System.out.println("\n");
-        return true;
     }
 
     static int Prec(Token token) {
@@ -1126,7 +1110,7 @@ public class Compilador {
         }
     }
 
-    public static List<Token> infixToPostfix(List<Token> exp) {
+    public static List<Token> infixToPostfix(List<Token> exp, LineNumberReader lr) {
         // Initializing empty String for result
         List<Token> result = new ArrayList<>();
 
@@ -1174,13 +1158,15 @@ public class Compilador {
 
         // Pop all the operators from the stack
         while (!stack.isEmpty()) {
-            if (stack.peek().lexema.equals("("))
+            if (stack.peek().lexema.equals("(")) {
+                errorHandler(lr.getLineNumber(), "Expressão inválida");
                 System.out.println("Invalid Expression");
+            }
             result.add(stack.peek());
             stack.pop();
         }
 
-        boolean valid = testExpression(result);
+        testExpression(result, lr);
 
         return result;
     }
