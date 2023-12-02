@@ -49,7 +49,7 @@ public class Controller {
         List<ErrorMessage> errorMessageList = Compilador.errorMessageList;
 
         ObservableList<String> errors = FXCollections.observableArrayList();
-        if (errorMessageList != null) {
+        if (errorMessageList.size() > 0) {
             for (ErrorMessage errorMessage : errorMessageList) {
                 String errorString = " Erro na Linha " + errorMessage.line + ": " + errorMessage.message;
                 errors.add(errorString);
