@@ -467,18 +467,16 @@ public class Compilador {
         }
 
         if (tipo.equals("inteira")) {
-            if (ultimo.equals("smais") || ultimo.equals("smenos") || ultimo.equals("sdiv") || ultimo.equals("smult") ||
+            if (ultimo.simbolo.equals("smais") || ultimo.simbolo.equals("smenos") || ultimo.simbolo.equals("sdiv") || ultimo.simbolo.equals("smult") ||
                     (csd != null && (csd.tipo.equals("funcao-inteira") || csd.tipo.equals("variavel-inteiro")))) {
                 return true;
             } else return false;
         } else {
-            if (ultimo.equals("smais") || ultimo.equals("smenos") || ultimo.equals("sdiv") || ultimo.equals("smult")) {
+            if (ultimo.simbolo.equals("smais") || ultimo.simbolo.equals("smenos") || ultimo.simbolo.equals("sdiv") || ultimo.simbolo.equals("smult") ||
+                (csd != null && (csd.tipo.equals("funcao-inteira") || csd.tipo.equals("variavel-inteiro")))) {
                 return false;
-            } else {
-                if (csd != null && (csd.tipo.equals("funcao-inteira") || csd.tipo.equals("variavel-inteiro"))) {
-                    return false;
-                } else return true;
-            }
+            } else
+                return true;
         }
     }
     /* Syntax analyzer functions */
