@@ -13,12 +13,11 @@ import java.util.List;
 
 public class Compilador {
     static List<Token> lista = new ArrayList<>();
-    static List<ErrorMessage> errorMessageList = new ArrayList<>();
+    public static List<ErrorMessage> errorMessageList = new ArrayList<>();
     static Deque<SimboloCSD> tabelaSimbolos = new ArrayDeque<>();
     static int label;
     static int memoryPointer = 0;
 
-//    public static List<Erro> listaErro;
     public static GeraCodigo codigo;
 
     /* Testing functions */
@@ -602,7 +601,8 @@ public class Compilador {
 
             var csd = consultaTabela(b.lexema);
             if (!analisaTipoSem(container.expressao, csd.tipo)) {
-                System.out.println("Tipo incompativeis");
+                errorHandler(lr.getLineNumber(), "Tipo incompatível");
+                System.out.println("Tipo incompativei");
             }
             if(csd.tipo.equals("variavel-booleano") || csd.tipo.equals("variavel-inteiro"))
                 codigo.gera("", "STR", csd.memoria, "");

@@ -7,9 +7,9 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
 
 <?import org.fxmisc.richtext.CodeArea?>
-
 <AnchorPane id="TelaPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="623.0" prefWidth="824.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.telacompilador.Controller">
     <CodeArea fx:id="codeArea" layoutX="13.0" layoutY="62.0" prefHeight="379.0" prefWidth="799.0">
 
@@ -49,4 +49,6 @@
                 </accelerator></MenuItem>
         </Menu>
     </MenuBar>
+   <Text layoutX="14.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Código:" />
+   <Text layoutX="14.0" layoutY="460.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Console:" />
 </AnchorPane>

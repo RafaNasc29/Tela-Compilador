@@ -1,7 +1,9 @@
 package com.example.telacompilador;
 
 import Compilador.Compilador;
+import Compilador.misc.ErrorMessage;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -12,16 +14,15 @@ import org.fxmisc.richtext.CodeArea;
 
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Controller {
     @FXML
     private CodeArea codeArea;
 
     @FXML
-    private ListView console;
-
-    private ObservableList obsConsole;
-
+    private ListView<String> console;
     private File selectedFile;
 
     @FXML
@@ -41,14 +42,23 @@ public class Controller {
     public void runMethod() throws IOException {
         saveMethod();
         Compilador.run(selectedFile);
-//        carregaConsole(Compilador.listaErro);
+        loadConsole();
     }
 
-//    public void carregaConsole(List<Erro> listaErro) {
-//        for (Erro i : listaErro) {
-//            Erro e = new Erro();
-//        }
-//    }
+    public void loadConsole() {
+        List<ErrorMessage> errorMessageList = Compilador.errorMessageList;
+
+        ObservableList<String> errors = FXCollections.observableArrayList();
+        if (errorMessageList != null) {
+            for (ErrorMessage errorMessage : errorMessageList) {
+                String errorString = " Erro na Linha " + errorMessage.line + ": " + errorMessage.message;
+                errors.add(errorString);
+            }
+        }else{
+            errors.add("Compilado Com Sucesso!");
+        }
+        console.setItems(errors);
+    }
 
     public void openMethod() throws IOException {
         Stage stage = new Stage();
