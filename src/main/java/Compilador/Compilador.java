@@ -490,7 +490,10 @@ public class Compilador {
                 } else {
                     errorHandler(lr.getLineNumber(), "Variavel ja declarada");
                 }
-            }else errorHandler(lr.getLineNumber(), "Esperando um identificador");
+            }else {
+                errorHandler(lr.getLineNumber(), "Esperando um identificador");
+                break;
+            }
         }
         container.setToken(analisadorLexical(container.read, lr));
         container = analisaTipo(container, lr);
@@ -965,7 +968,7 @@ public class Compilador {
                         if (container.read == -1 && container.token.lexema.isEmpty()) {
                             codigo.gera("", "HLT", "", "");
                         } else {
-                            errorHandler(curLine, "Error not EOF or comment");
+                            errorHandler(curLine, "Não é EOF ou comentário não fechado");
                         }
                     } else {
                         errorHandler(lr.getLineNumber(), "Esperando um ' . '");
