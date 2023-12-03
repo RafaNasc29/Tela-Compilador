@@ -50,6 +50,7 @@ public class Compilador {
 
     private static void errorHandler(int line, String message) {
         errorMessageList.add(new ErrorMessage(line, message));
+        System.out.println("Linha " + line + " " + message);
     }
 
     /* Lexical analyser functions */
@@ -210,8 +211,6 @@ public class Compilador {
                 token.simbolo = "sdif";
             } else {
                 errorHandler(lr.getLineNumber(), "Carácter inválido " + '"' + (char) temp + '"');
-                System.out.println("ERRO 1 " + (char) temp + " " + temp);
-                trataErro(temp, "Carácter inválido " + '"' + (char) temp + '"');
             }
         } else if (r == 60) {
             r = lr.read();
@@ -269,11 +268,6 @@ public class Compilador {
         return new Container(token, r);
     }
 
-    private static void trataErro(int r, String error) {
-        Token token = new Token(String.valueOf(r), error);
-        lista.add(token);
-    }
-
     private static Container pegaToken(int r, LineNumberReader lr) throws IOException {
         Container container = new Container(new Token("", ""), r);
         if (isDigit(r)) {
@@ -290,8 +284,6 @@ public class Compilador {
             container = trataPontuacao(r, lr);
         } else {
             errorHandler(lr.getLineNumber(), "Caráctere inválido " + '"' + (char) r + '"');
-            System.out.println("Caráctere inválido " + (char) r + " " + r);
-            trataErro(r, "Caráctere inválido " + '"' + (char) r + '"');
             container = pegaToken(container.read = lr.read(), lr);
         }
         return container;
@@ -307,9 +299,7 @@ public class Compilador {
                     r = lr.read();
                 }
                 if (r == -1) {
-                    errorHandler(lr.getLineNumber(), "Comentário não fechado");
-                    trataErro(r, "Comentário não fechado, linha " + curLine);
-                    System.out.println("Comentário não fechado, linha " + curLine);
+                    errorHandler(curLine, "Comentário não fechado");
                 }
                 r = lr.read();
             }
@@ -384,51 +374,21 @@ public class Compilador {
     public static void geraCodigoExpressao(List<Token> expressao) throws IOException {
         for (Token t : expressao) {
             switch (t.simbolo) {
-                case "smais" -> {
-                    codigo.gera("", "ADD", "", "");
-                }
-                case "smenos" -> {
-                    codigo.gera("", "SUB", "", "");
-                }
-                case "sdiv" -> {
-                    codigo.gera("", "DIVI", "", "");
-                }
-                case "smult" -> {
-                    codigo.gera("", "MULT", "", "");
-                }
-                case "smaior" -> {
-                    codigo.gera("", "CMA", "", "");
-                }
-                case "smaiorig" -> {
-                    codigo.gera("", "CMAQ", "", "");
-                }
-                case "sig" -> {
-                    codigo.gera("", "CEQ", "", "");
-                }
-                case "smenor" -> {
-                    codigo.gera("", "CME", "", "");
-                }
-                case "smenorig" -> {
-                    codigo.gera("", "CMEQ", "", "");
-                }
-                case "sdif" -> {
-                    codigo.gera("", "CDIF", "", "");
-                }
-                case "se" -> {
-                    codigo.gera("", "AND", "", "");
-                }
-                case "sou" -> {
-                    codigo.gera("", "OR", "", "");
-                }
-                case "snao" -> {
-                    codigo.gera("", "NEG", "", "");
-                }
-                case "sverdadeiro" -> {
-                    codigo.gera("", "LDC", "1", "");
-                }
-                case "sfalso" -> {
-                    codigo.gera("", "LDC", "0", "");
-                }
+                case "smais" -> codigo.gera("", "ADD", "", "");
+                case "smenos" -> codigo.gera("", "SUB", "", "");
+                case "sdiv" -> codigo.gera("", "DIVI", "", "");
+                case "smult" -> codigo.gera("", "MULT", "", "");
+                case "smaior" -> codigo.gera("", "CMA", "", "");
+                case "smaiorig" -> codigo.gera("", "CMAQ", "", "");
+                case "sig" -> codigo.gera("", "CEQ", "", "");
+                case "smenor" -> codigo.gera("", "CME", "", "");
+                case "smenorig" -> codigo.gera("", "CMEQ", "", "");
+                case "sdif" -> codigo.gera("", "CDIF", "", "");
+                case "se" -> codigo.gera("", "AND", "", "");
+                case "sou" -> codigo.gera("", "OR", "", "");
+                case "snao" -> codigo.gera("", "NEG", "", "");
+                case "sverdadeiro" -> codigo.gera("", "LDC", "1", "");
+                case "sfalso" -> codigo.gera("", "LDC", "0", "");
                 case "sunario" ->{
                     if(t.lexema.equals("-u")){
                         codigo.gera("", "INV", "", "");
@@ -459,24 +419,23 @@ public class Compilador {
             csd = consultaTabela(ultimo.lexema);
         }
 
-        if (tipo.equals("variavel-inteiro") || tipo.equals("funcao-inteira")) {
-            tipo = "inteira";
-        } else if (tipo.equals("variavel-booleano") || tipo.equals("funcao-boleana")) {
-            tipo = "boleana";
+        if (tipo.equals("variavel-inteiro") || tipo.equals("funcao-inteiro")) {
+            tipo = "inteiro";
+        } else if (tipo.equals("variavel-booleano") || tipo.equals("funcao-booleano")) {
+            tipo = "booleano";
         } else {
             errorHandler(lr.getLineNumber(), "Identificador invalido");
-            System.out.println("Identificador invalido");
             return false;
         }
 
-        if (tipo.equals("inteira")) {
+        if (tipo.equals("inteiro")) {
             if (ultimo.simbolo.equals("smais") || ultimo.simbolo.equals("smenos") || ultimo.simbolo.equals("sdiv") || ultimo.simbolo.equals("smult") ||
-                    (csd != null && (csd.tipo.equals("funcao-inteira") || csd.tipo.equals("variavel-inteiro")))) {
+                    (csd != null && (csd.tipo.equals("funcao-inteiro") || csd.tipo.equals("variavel-inteiro")))) {
                 return true;
             } else return false;
         } else {
             if (ultimo.simbolo.equals("smais") || ultimo.simbolo.equals("smenos") || ultimo.simbolo.equals("sdiv") || ultimo.simbolo.equals("smult") ||
-                (csd != null && (csd.tipo.equals("funcao-inteira") || csd.tipo.equals("variavel-inteiro")))) {
+                (csd != null && (csd.tipo.equals("funcao-inteiro") || csd.tipo.equals("variavel-inteiro")))) {
                 return false;
             } else
                 return true;
@@ -494,12 +453,10 @@ public class Compilador {
                         container.setToken(analisadorLexical(container.read, lr));
                     } else {
                         errorHandler(lr.getLineNumber(), "Esperando um ' ; '");
-                        System.out.println("Esperando um ' ; '");
                     }
                 }
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando identificador");
-                System.out.println("Error not sidentificador");
             }
         }
         return container;
@@ -527,13 +484,11 @@ public class Compilador {
                             container.setToken(analisadorLexical(container.read, lr));
                             if (container.token.simbolo.equals("sdoispontos")) {
                                 errorHandler(lr.getLineNumber(), "Esperando um identificador");
-                                System.out.println("Esperando um ':'");
                             }
                         }
                     }
                 } else {
                     errorHandler(lr.getLineNumber(), "Variavel ja declarada");
-                    System.out.println("Variavel ja declarada");
                 }
             }
         }
@@ -548,7 +503,6 @@ public class Compilador {
 
         if (!container.token.simbolo.equals("sinteiro") && !container.token.simbolo.equals("sbooleano")) {
             errorHandler(lr.getLineNumber(), "Tipo invalido");
-            System.out.println("erro tipo invalido");
         } else
             colocaTipoTabela(container.token.lexema);
 
@@ -574,7 +528,6 @@ public class Compilador {
                     if(flagError){
                         flagError = false;
                         errorHandler(lr.getLineNumber(), "Esperando um ' ; '");
-                        System.out.println("Esperando um ' ; '");
                         }
                         container.setToken(analisadorLexical(container.read, lr));
                 }
@@ -582,7 +535,6 @@ public class Compilador {
             container.setToken(analisadorLexical(container.read, lr));
         } else {
             errorHandler(lr.getLineNumber(), "Esperando Identificador Inicio");
-            System.out.println("Esperando Identificador Inicio");
         }
 
         return container;
@@ -614,11 +566,10 @@ public class Compilador {
             var csd = consultaTabela(b.lexema);
             if (!analisaTipoSem(container.expressao, csd.tipo, lr)) {
                 errorHandler(lr.getLineNumber(), "Tipo incompatível");
-                System.out.println("Tipo incompativel");
             }
             if(csd.tipo.equals("variavel-booleano") || csd.tipo.equals("variavel-inteiro"))
                 codigo.gera("", "STR", csd.memoria, "");
-            else if(csd.tipo.equals("funcao-boleana") || csd.tipo.equals("funcao-inteira"))
+            else if(csd.tipo.equals("funcao-booleano") || csd.tipo.equals("funcao-inteiro"))
                 codigo.gera("", "STR", "0", "");
             container.expressao = new ArrayList<>();
         } else {
@@ -675,19 +626,16 @@ public class Compilador {
                     if (container.token.simbolo.equals("sfecha_parenteses")) {
                         container.setToken(analisadorLexical(container.read, lr));
                     } else{
-                        errorHandler(lr.getLineNumber(), "Esperando ' ) '"); System.out.println("erro not sfecha_parenteses");
+                        errorHandler(lr.getLineNumber(), "Esperando ' ) '");
                     }
                 } else {
                     errorHandler(lr.getLineNumber(), "Variavel nao declarada");
-                    System.out.println("Variavel nao declarada");
                 }
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando identificador");
-                System.out.println("erro not sidentificador");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando ' ( '");
-            System.out.println("erro not sabre_parenteses");
         }
 
         return container;
@@ -729,19 +677,15 @@ public class Compilador {
                         container.setToken(analisadorLexical(container.read, lr));
                     } else {
                         errorHandler(lr.getLineNumber(), "Esperando ' ) '");
-                        System.out.println("erro not sfecha_parenteses");
                     }
                 } else {
                     errorHandler(lr.getLineNumber(), "Não é uma variavel");
-                    System.out.println("nao e uma variavel");
                 }
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando identificador");
-                System.out.println("erro not sidentificador");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando ' ( '");
-            System.out.println("erro not sabre_parenteses");
         }
 
         return container;
@@ -775,11 +719,9 @@ public class Compilador {
                 codigo.gera("L" + aux2, "NULL", "", "");
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando 'faca'");
-                System.out.println("erro not sfaca");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Tipos Incompativeis");
-            System.out.println("tipos diferentes na linha" + lr);
         }
 
         return container;
@@ -814,7 +756,6 @@ public class Compilador {
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando um 'entao'");
-            System.out.println("erro not sentao");
         }
 
         return container;
@@ -891,14 +832,12 @@ public class Compilador {
                 container.setToken(analisadorLexical(container.read, lr));
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando ' ) '");
-                System.out.println("erro not sfecha_parenteses");
             }
         } else if (container.token.lexema.equals("verdadeiro") || container.token.lexema.equals("falso")) {
             container.expressao.add(container.token);
             container.setToken(analisadorLexical(container.read, lr));
         } else {
             errorHandler(lr.getLineNumber(), "Lexema invalido");
-            System.out.println("erro lexema invalido");
         }
 
         return container;
@@ -925,7 +864,6 @@ public class Compilador {
                 container.setToken(analisadorLexical(container.read, lr));
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando um ' ; '");
-                System.out.println("Esperando um ' ; '");
             }
         }
 
@@ -947,11 +885,11 @@ public class Compilador {
                     if (container.token.simbolo.equals("sinteiro") || container.token.simbolo.equals("sbooleano")) {
                         if (container.equals("sinteiro")) {
                             SimboloCSD aux = tabelaSimbolos.pop();
-                            aux.tipo = "funcao-inteira";
+                            aux.tipo = "funcao-inteiro";
                             tabelaSimbolos.push(aux);
                         } else {
                             SimboloCSD aux = tabelaSimbolos.pop();
-                            aux.tipo = "funcao-boleana";
+                            aux.tipo = "funcao-booleano";
                             tabelaSimbolos.push(aux);
                         }
                         codigo.gera(tabelaSimbolos.peek().memoria, "NULL", "", "");
@@ -963,19 +901,15 @@ public class Compilador {
                         }
                     } else {
                         errorHandler(lr.getLineNumber(), "Esperando declaração de tipo");
-                        System.out.println("Error not stipo");
                     }
                 } else {
                     errorHandler(lr.getLineNumber(), "Esperando um ' : '");
-                    System.out.println("Error not sdoispontos");
                 }
             }else {
                 errorHandler(lr.getLineNumber(), "Funcao ja declarada");
-                System.out.println("Funcao ja declarada");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando identificador");
-            System.out.println("Error not sidentificador");
         }
         return container;
     }
@@ -995,15 +929,12 @@ public class Compilador {
                     codigo.gera("", "RETURN", "", "");
                 } else {
                     errorHandler(lr.getLineNumber(), "Esperando um ' ; '");
-                    System.out.println("Error not spontovirgula");
                 }
             } else {
                 errorHandler(lr.getLineNumber(), "Procedimento ja declarado");
-                System.out.println("Procedimento ja declarado");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando identificador");
-            System.out.println("Error not sidentificador");
         }
         return container;
     }
@@ -1033,26 +964,20 @@ public class Compilador {
                         container.setToken(analisadorLexical(container.read, lr));
                         if (container.read == -1 && container.token.lexema.isEmpty()) {
                             codigo.gera("", "HLT", "", "");
-                            System.out.println("SUCCESS");
                         } else {
                             errorHandler(curLine, "Error not EOF or comment");
-                            System.out.println("Error not EOF or comment, line: " + curLine);
                         }
                     } else {
                         errorHandler(lr.getLineNumber(), "Esperando um ' . '");
-                        System.out.println("Error not sponto");
                     }
                 } else {
                     errorHandler(lr.getLineNumber(), "Esperando um ' ; '");
-                    System.out.println("Error not spontovirgula");
                 }
             } else {
                 errorHandler(lr.getLineNumber(), "Esperando identificador");
-                System.out.println("Error not sidentificador");
             }
         } else {
             errorHandler(lr.getLineNumber(), "Esperando identificador 'programa'");
-            System.out.println("Error not sprograma");
         }
         return container;
     }
@@ -1090,9 +1015,9 @@ public class Compilador {
                 case "sidentificador" -> {
                     csd = consultaTabela(expression.get(i).lexema);
                     if (csd != null) {
-                        if (csd.tipo.equals("variavel-inteiro") || csd.tipo.equals("funcao-inteira")) {
+                        if (csd.tipo.equals("variavel-inteiro") || csd.tipo.equals("funcao-inteiro")) {
                             stack.push("inteiro");
-                        } else if (csd.tipo.equals("variavel-booleano") || csd.tipo.equals("funcao-boleana")) {
+                        } else if (csd.tipo.equals("variavel-booleano") || csd.tipo.equals("funcao-booleano")) {
                             stack.push("booleano");
                         }
                     }
@@ -1141,7 +1066,6 @@ public class Compilador {
         }
         if (flag) {
             errorHandler(lr.getLineNumber(), "Expressão com tipos incompatíveis.");
-            System.out.println("Linha: " + lr.getLineNumber() + " Expressão com tipos incompatíveis.");
         }
     }
 
@@ -1216,7 +1140,6 @@ public class Compilador {
         while (!stack.isEmpty()) {
             if (stack.peek().lexema.equals("(")) {
                 errorHandler(lr.getLineNumber(), "Expressão inválida");
-                System.out.println("Invalid Expression");
             }
             result.add(stack.peek());
             stack.pop();
