@@ -486,11 +486,11 @@ public class Compilador {
                                 errorHandler(lr.getLineNumber(), "Esperando um identificador");
                             }
                         }
-                    }
+                    }else errorHandler(lr.getLineNumber(), "Esperando um ' , ' ou ' : '");
                 } else {
                     errorHandler(lr.getLineNumber(), "Variavel ja declarada");
                 }
-            }
+            }else errorHandler(lr.getLineNumber(), "Esperando um identificador");
         }
         container.setToken(analisadorLexical(container.read, lr));
         container = analisaTipo(container, lr);
