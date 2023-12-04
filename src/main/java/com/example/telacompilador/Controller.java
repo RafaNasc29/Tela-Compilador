@@ -42,6 +42,38 @@ public class Controller {
         saveMethod();
         Compilador.run(selectedFile);
         loadConsole();
+
+        console.setOnMouseClicked(event -> {
+            int selectedIndex = console.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0) {
+                String selectedError = console.getItems().get(selectedIndex);
+                int lineNumber = extractLineNumber(selectedError);
+                if (lineNumber > 0) {
+                    navigateToLine(lineNumber);
+                }
+            }
+        });
+    }
+
+    private int extractLineNumber(String errorMessage) {
+        // Procura pelo padrão "Erro na Linha [número]:"
+        int lineNumber = -1;
+        String pattern = "Erro na Linha ";
+        int index = errorMessage.indexOf(pattern);
+        if (index != -1) {
+            String numString = errorMessage.substring(index + pattern.length());
+            try {
+                lineNumber = Integer.parseInt(numString.split(":")[0].trim());
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        return lineNumber;
+    }
+
+    private void navigateToLine(int lineNumber) {
+        codeArea.moveTo(lineNumber - 1, 0); // Move o cursor para a linha especificada
+        codeArea.requestFollowCaret(); // Solicita à codeArea para rolar para a posição do cursor
     }
 
     public void loadConsole() {
