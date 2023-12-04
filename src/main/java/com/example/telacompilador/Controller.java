@@ -14,7 +14,6 @@ import org.fxmisc.richtext.CodeArea;
 
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Controller {
@@ -49,7 +48,7 @@ public class Controller {
         List<ErrorMessage> errorMessageList = Compilador.errorMessageList;
 
         ObservableList<String> errors = FXCollections.observableArrayList();
-        if (errorMessageList.size() > 0) {
+        if (!errorMessageList.isEmpty()) {
             for (ErrorMessage errorMessage : errorMessageList) {
                 String errorString = " Erro na Linha " + errorMessage.line + ": " + errorMessage.message;
                 errors.add(errorString);
