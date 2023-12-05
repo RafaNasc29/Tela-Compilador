@@ -1013,6 +1013,7 @@ public class Compilador {
         String temp, aux1, aux2;
         Deque<String> stack = new ArrayDeque<>();
         Deque<String> auxStack = new ArrayDeque<>();
+
         for (int i = expression.size() - 1; i >= 0; i--) {
             switch (expression.get(i).simbolo) {
                 case "sidentificador" -> {
@@ -1031,17 +1032,25 @@ public class Compilador {
                 case "snao" -> stack.push("negOp");
                 case "sunario" -> stack.push("unaryOp");
                 case "snumero" -> stack.push("inteiro");
+                case "sfalso", "sverdadeiro" -> stack.push("booleano");
                 default -> stack.push(expression.get(i).lexema);
             }
         }
         while (!stack.isEmpty()) {
             temp = stack.pop();
             switch (temp) {
-                case "arithmeticOp", "relationalOp" -> {
+                case "arithmeticOp" -> {
                     aux1 = auxStack.pop();
                     aux2 = auxStack.pop();
                     if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
                         auxStack.push("inteiro");
+                    } else flag = true;
+                }
+                case "relationalOp" -> {
+                    aux1 = auxStack.pop();
+                    aux2 = auxStack.pop();
+                    if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
+                        auxStack.push("booleano");
                     } else flag = true;
                 }
                 case "logicalOp" -> {
