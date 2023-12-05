@@ -74,6 +74,7 @@ public class Controller {
     private void navigateToLine(int lineNumber) {
         codeArea.moveTo(lineNumber - 1, 0); // Move o cursor para a linha especificada
         codeArea.requestFollowCaret(); // Solicita à codeArea para rolar para a posição do cursor
+        codeArea.selectLine();
     }
 
     public void loadConsole() {
