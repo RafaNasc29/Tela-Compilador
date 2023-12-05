@@ -8,11 +8,12 @@ import java.io.IOException;
 public class GeraCodigo {
     private BufferedWriter bw;
     public GeraCodigo(File filename) throws IOException {
-        String fname = filename.getName();
+        String fname = String.valueOf(filename);
         int pos = fname.lastIndexOf(".");
         if (pos > 0) {
             fname = fname.substring(0, pos);
         }
+        System.out.println(fname);
         File file = new File(fname + ".obj");
 
         if(file.exists())
