@@ -625,6 +625,9 @@ public class Compilador {
                         codigo.gera("", "RD", "", "");
                         codigo.gera("", "STR", csd.memoria, "");
                     }
+                    else{
+                        errorHandler(lr.getLineNumber(),"variavel " + container.token.lexema + " incompativel com comando leia");
+                    }
                     container.setToken(analisadorLexical(container.read, lr));
                     if (container.token.simbolo.equals("sfecha_parenteses")) {
                         container.setToken(analisadorLexical(container.read, lr));
@@ -673,6 +676,8 @@ public class Compilador {
                     if (csd != null && csd.tipo.equals("variavel-inteiro")) {
                         codigo.gera("", "LDV", csd.memoria, "");
                         codigo.gera("", "PRN", "", "");
+                    }else{
+                        errorHandler(lr.getLineNumber(),"variavel " + container.token.lexema + " incompativel com comando escreva");
                     }
 
                     container.setToken(analisadorLexical(container.read, lr));
@@ -786,9 +791,20 @@ public class Compilador {
                 unario = "-u";
             container.expressao.add(new Token(unario, "sunario"));
 
-            container.setToken(analisadorLexical(container.read, lr));
-            if (container.equals("snumero") || container.equals("sidentificador"))
+            /*container.setToken(analisadorLexical(container.read, lr));
+            if (container.equals("snumero"))
                 container.expressao.add(container.token);
+            else{
+                if(container.equals("sidentificador")){
+                    SimboloCSD csd = consultaTabela(container.token.lexema);
+                    if(csd != null && csd.tipo.equals("variavel-inteiro")){
+                        container.expressao.add(container.token);
+                    }else
+                        errorHandler(lr.getLineNumber(), "Tipo incompativel");
+                }else
+                    errorHandler(lr.getLineNumber(), "Simbolo invalido");
+            }*/
+            container.setToken(analisadorLexical(container.read, lr));
         }
         container = analisaTermo(container, lr);
         while (container.token.simbolo.equals("smais") || container.token.simbolo.equals("smenos") ||
