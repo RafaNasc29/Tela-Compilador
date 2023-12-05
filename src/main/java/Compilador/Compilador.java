@@ -851,6 +851,7 @@ public class Compilador {
             container.setToken(analisadorLexical(container.read, lr));
         } else {
             errorHandler(lr.getLineNumber(), "Lexema invalido");
+            container.setToken(analisadorLexical(container.read,lr));
         }
 
         return container;
@@ -1048,41 +1049,45 @@ public class Compilador {
         }
         while (!stack.isEmpty()) {
             temp = stack.pop();
-            switch (temp) {
-                case "arithmeticOp" -> {
-                    aux1 = auxStack.pop();
-                    aux2 = auxStack.pop();
-                    if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
-                        auxStack.push("inteiro");
-                    } else flag = true;
+            try {
+                switch (temp) {
+                    case "arithmeticOp" -> {
+                        aux1 = auxStack.pop();
+                        aux2 = auxStack.pop();
+                        if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
+                            auxStack.push("inteiro");
+                        } else flag = true;
+                    }
+                    case "relationalOp" -> {
+                        aux1 = auxStack.pop();
+                        aux2 = auxStack.pop();
+                        if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
+                            auxStack.push("booleano");
+                        } else flag = true;
+                    }
+                    case "logicalOp" -> {
+                        aux1 = auxStack.pop();
+                        aux2 = auxStack.pop();
+                        if (aux1.equals("booleano") && aux2.equals("booleano")) {
+                            auxStack.push("booleano");
+                        } else flag = true;
+                    }
+                    case "unaryOp" -> {
+                        aux1 = auxStack.pop();
+                        if (aux1.equals("inteiro")) {
+                            auxStack.push("inteiro");
+                        } else flag = true;
+                    }
+                    case "negOp" -> {
+                        aux1 = auxStack.pop();
+                        if (aux1.equals("booleano")) {
+                            auxStack.push("booleano");
+                        } else flag = true;
+                    }
+                    default -> auxStack.push(temp);
                 }
-                case "relationalOp" -> {
-                    aux1 = auxStack.pop();
-                    aux2 = auxStack.pop();
-                    if (aux1.equals("inteiro") && aux2.equals("inteiro")) {
-                        auxStack.push("booleano");
-                    } else flag = true;
-                }
-                case "logicalOp" -> {
-                    aux1 = auxStack.pop();
-                    aux2 = auxStack.pop();
-                    if (aux1.equals("booleano") && aux2.equals("booleano")) {
-                        auxStack.push("booleano");
-                    } else flag = true;
-                }
-                case "unaryOp" -> {
-                    aux1 = auxStack.pop();
-                    if (aux1.equals("inteiro")) {
-                        auxStack.push("inteiro");
-                    } else flag = true;
-                }
-                case "negOp" -> {
-                    aux1 = auxStack.pop();
-                    if (aux1.equals("booleano")) {
-                        auxStack.push("booleano");
-                    } else flag = true;
-                }
-                default -> auxStack.push(temp);
+            }catch(Exception e){
+                errorHandler(lr.getLineNumber(), "Expressao invalida");
             }
             if (flag) break;
         }
