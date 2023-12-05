@@ -816,8 +816,18 @@ public class Compilador {
     public static Container analisaFator(Container container, LineNumberReader lr) throws IOException {
 
         if (container.token.simbolo.equals("sidentificador")) {
-            container.expressao.add(container.token);
-            analisaChamadaFuncao(container, lr);
+            SimboloCSD csd = consultaTabela(container.token.lexema);
+            if(csd != null){
+                if(csd.tipo.equals("funcao-inteiro") || csd.tipo.equals("funcao-booleano")){
+                    container.expressao.add(container.token);
+                    analisaChamadaFuncao(container, lr);
+                }
+                else{
+                    container.expressao.add(container.token);
+                    container.setToken(analisadorLexical(container.read,lr));
+                }
+            }else
+                errorHandler(lr.getLineNumber(), "Variavel " + container.token.lexema + " nao encontrado");
         } else if (container.token.simbolo.equals("snumero")) {
             container.expressao.add(container.token);
             container.setToken(analisadorLexical(container.read, lr));
